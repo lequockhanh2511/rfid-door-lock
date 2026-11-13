@@ -1,0 +1,16 @@
+M1 VALIDATION — 2026-11-13
+Compiler: 14.2.0
+Command: python3 tools/check_contracts.py
+
+PASS standalone header: app/inc/app_cfg.h
+PASS standalone header: app/inc/app_ipc.h
+PASS standalone header: app/inc/app_tasks.h
+PASS standalone header: app/inc/app_types.h
+PASS standalone header: hal/inc/device_api.h
+PASS standalone header: hal/inc/hal_ports.h
+PASS combined contracts and configuration constraints
+M1 compile checks only. Firmware link, functionality and hardware: NOT TESTED.
+
+Exit: 0
+
+Initial check harness rejected the macro-only config header as an empty translation unit under -pedantic. Added a harmless external declaration to the probe; reran below results. No driver or algorithm was tested.
