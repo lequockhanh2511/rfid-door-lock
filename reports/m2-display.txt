@@ -1,0 +1,2 @@
+PASS OLED init, 1024-byte transfer, page/column layout, font A, clipping
+PASS OLED validation, bus error, wrap timeout, LED GPIO independent of display
