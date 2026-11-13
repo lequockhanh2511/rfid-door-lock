@@ -2,7 +2,6 @@
 #include "device_api.h"
 #include "driver_port.h"
 #include <string.h>
-#include <stdio.h>
 #include "font5x7.inc"
 static uint8_t frame[SSD1306_FRAME_BYTES];
 static bool ready;
@@ -54,6 +53,13 @@ app_result_t oled_init(uint32_t t) {
     if(s==APP_OK)ready=true;
     return s;
 }
+static void draw_number(uint8_t row,uint8_t col,uint32_t number,unsigned min_digits) {
+    char reversed[11],text[11];unsigned n=0;
+    do { reversed[n++]=(char)('0'+number%10u);number/=10u; } while(number&&n<10);
+    while(n<min_digits&&n<10)reversed[n++]='0';
+    for(unsigned i=0;i<n;i++)text[i]=reversed[n-1-i];
+    text[n]=0;ssd1306_text(row,col,text);
+}
 app_result_t oled_present(const app_ui_snapshot_t *v,uint32_t t) {
     static const char *const states[]={"BOOT","SETUP REQUIRED","READY","ENTER PIN","UNLOCKED",
      "ADMIN PIN","ADMIN MENU","SCAN NEW CARD","DELETE SLOT","CONFIRM DELETE",
@@ -62,15 +68,15 @@ app_result_t oled_present(const app_ui_snapshot_t *v,uint32_t t) {
        v->card_id>APP_CARD_CAPACITY||v->used_count>APP_CARD_CAPACITY)return APP_INVALID_INPUT;
     ssd1306_clear();ssd1306_text(0,0,"RFID DOOR LOCK");ssd1306_text(1,0,states[v->state]);
     ssd1306_text(2,0,v->unlocked?"LOCK: OPEN":"LOCK: CLOSED");
-    char line[22];snprintf(line,sizeof line,"CARD:%02u TOTAL:%02u",(unsigned)v->card_id,(unsigned)v->used_count);
-    ssd1306_text(3,0,line);
+    char line[22];ssd1306_text(3,0,"CARD:00 TOTAL:00");
+    draw_number(3,5,v->card_id,2);draw_number(3,14,v->used_count,2);
     if(v->state==APP_STATE_PIN_ENTRY||v->state==APP_STATE_ADMIN_AUTH||v->state==APP_STATE_CHANGE_PIN){
         memset(line,'*',v->entered_digits);line[v->entered_digits]=0;ssd1306_text(4,0,line);
     } else {
-        snprintf(line,sizeof line,"RESULT:%u",(unsigned)v->result);ssd1306_text(4,0,line);
+        ssd1306_text(4,0,"RESULT:");draw_number(4,7,(uint32_t)v->result,1);
     }
     if(v->state==APP_STATE_ADMIN_MENU){ssd1306_text(5,0,"1 ADD 2 DEL 3 LIST");ssd1306_text(6,0,"4 USER PIN 5 ADMIN");}
-    else if(v->unlocked){snprintf(line,sizeof line,"LEFT:%lu MS",(unsigned long)v->remaining_ms);ssd1306_text(5,0,line);}
+    else if(v->unlocked){ssd1306_text(5,0,"LEFT MS:");draw_number(5,8,v->remaining_ms,1);}
     ssd1306_text(7,0,"# OK  * BACK  D EXIT");
     return ssd1306_flush(t);
 }

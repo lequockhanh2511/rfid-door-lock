@@ -1,0 +1,10 @@
+Arm GNU Toolchain 13.3.Rel1 / GCC 13.3.1
+Target: Cortex-M4F, STM32F411xE, hard-float
+Memory region         Used Size  Region Size  %age Used
+           FLASH:       14732 B       512 KB      2.81%
+             RAM:       29192 B       128 KB     22.27%
+   text	   data	    bss	    dec	    hex	filename
+  14704	     20	  29172	  43896	   ab78	PROJECT/build/m2/rfid_m2_diagnostics.elf
+BUILD PASS: ARM diagnostic firmware only. Hardware execution: NOT TESTED.
+
+arm-none-eabi-nm -u: no unresolved symbols.

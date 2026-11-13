@@ -42,4 +42,4 @@ void contract_usage(void) {
 ''', encoding='utf-8')
     subprocess.run([cc, *flags, str(source)], check=True)
     print('PASS combined contracts and configuration constraints')
-print('M1 compile checks only. Firmware link, functionality and hardware: NOT TESTED.')
+print('Header compile checks only; this command does not link firmware or test hardware.')

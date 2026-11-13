@@ -3,6 +3,8 @@
 #include "app_types.h"
 /* Nguyen Huu Anh: raw card presence. NO_EVENT is distinct from IO_ERROR. */
 app_result_t rc522_init(void);
+/* Returns APP_NO_EVENT with present=false on RF timer expiry; transport failures
+ * are distinct. Repeated successful polls may return the same card; task filters it. */
 app_result_t rc522_poll(app_uid_t *uid, bool *present, uint32_t timeout_ms);
 /* Ha Xuan Khai: raw 16-bit matrix; debounce belongs to keypad logic.
  * Key order specified by keypad driver config after actual wiring is known.

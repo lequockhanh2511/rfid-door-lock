@@ -1,0 +1,4 @@
+Initial MSP: 0x20020000
+Reset vector: 0x08001f59 (Thumb, inside Flash)
+Binary SHA256: 145d421258bca53365942ed31bfc22012e3db55033ec8160d6bca714f36a52ba
+No hardware execution performed.
