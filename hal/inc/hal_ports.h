@@ -11,7 +11,8 @@ app_result_t port_spi_transfer(const uint8_t *tx, uint8_t *rx,
                                size_t length, uint32_t timeout_ms);
 /* 7-bit I2C address; adapter handles STM32 HAL address encoding.
  * Each call obtains/releases the shared I2C mutex within the timeout budget.
- * write_read uses a repeated start and keeps ownership for the whole transfer.
+ * write_read accepts 1- or 2-byte register prefixes, uses a repeated start
+ * and keeps ownership for the whole transfer. Blocking timeouts must be > 0.
  */
 app_result_t port_i2c_write(uint8_t address, const uint8_t *data,
                            size_t length, uint32_t timeout_ms);

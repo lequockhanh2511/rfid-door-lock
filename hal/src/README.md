@@ -1,3 +1,4 @@
-# Driver ở M2
-RC522, EEPROM 24LC256, keypad, SSD1306 và LED.
-API trong hal/inc/ chưa có implementation. Cần backend STM32 thực và mock riêng.
+# Driver M2
+rc522.c/eeprom24.c: phần Anh; keypad.c: phần Khải;
+ssd1306.c/lock_output.c/font5x7.inc: phần Khánh.
+Mã backend STM32 ở bsp/src; mô hình host ở tests/. Chưa nghiệm thu kit.

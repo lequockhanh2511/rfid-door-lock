@@ -12,3 +12,8 @@ Nếu không có kit, driver/task chỉ ghi kiểm tra host đạt, nghiệm thu
 Chỉ sau kit đạt mới merge develop về main và tag v1.0.0.
 Không có remote/PR ở M1. Sau này cần PR thật thì kết nối repo và review thật.
 Không sửa main bằng tính năng sau baseline. Không sửa tác giả commit thành sinh viên.
+
+## Đã thực hiện M2
+feature/platform-m2 -> develop (nguồn SDK/BSP); từng nhánh driver -> develop
+sau host test; feature/m2-diagnostics -> develop sau ARM build. Chỉ merge cục bộ,
+không giả PR/review GitHub. Chưa tạo integration/system-v1 vì chưa có app M3.
