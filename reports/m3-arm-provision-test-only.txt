@@ -1,6 +1,0 @@
-Memory region         Used Size  Region Size  %age Used
-           FLASH:        9776 B       512 KB      1.86%
-             RAM:       29160 B       128 KB     22.25%
-   text	   data	    bss	    dec	    hex	filename
-   9748	     20	  29140	  38908	   97fc	/workspace/scratch/b236814e5b43/work/rfid-door-lock/build/provision/rfid_initial_setup.elf
-BUILD PASS: ARM target=provision. Hardware execution: NOT TESTED.

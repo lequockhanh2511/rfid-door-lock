@@ -1,3 +1,0 @@
-PASS keypad scan all 16 positions, settle, debounce and hold suppression
-PASS keypad bouncing, chord quarantine until full stable release
-PASS keypad wraparound and null argument

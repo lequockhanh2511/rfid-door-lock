@@ -1,6 +1,0 @@
-HOST MOCK TESTS; not RF/electrical validation
-PASS EEPROM split at 63/64/128/192, ACK polling, readback
-PASS EEPROM boundary and invalid arguments
-PASS EEPROM write protection mismatch, bus failure, timeout across clock wrap
-PASS RC522 CRC known vector, WUPA, select cascades 4/7/10 bytes, HALT
-PASS RC522 absent, BCC/SAK corruption, collision, SPI failure, bounded wraparound timeout
