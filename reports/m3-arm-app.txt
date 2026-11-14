@@ -1,0 +1,6 @@
+Memory region         Used Size  Region Size  %age Used
+           FLASH:       21040 B       512 KB      4.01%
+             RAM:       29192 B       128 KB     22.27%
+   text	   data	    bss	    dec	    hex	filename
+  21016	     16	  29176	  50208	   c420	/workspace/scratch/b236814e5b43/work/rfid-door-lock/build/app/rfid_application.elf
+BUILD PASS: ARM target=app. Hardware execution: NOT TESTED.

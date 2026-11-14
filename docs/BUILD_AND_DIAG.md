@@ -12,7 +12,7 @@ Không yêu cầu CMake, không yêu cầu chạy CubeMX. Không có file .ioc g
 ```
 python3 tools/check_contracts.py
 python3 tools/run_host_tests.py
-python3 tools/build_firmware.py
+python3 tools/build_firmware.py --target m2
 ```
 Nếu compiler chưa có trên PATH, đặt ARM_CC vào đúng executable bằng đường dẫn của bạn.
 Script không tự cài phần mềm, không kết nối/nạp board, không thay đổi cấu hình máy.
@@ -28,8 +28,8 @@ Chưa nạp lên kit; kiểm tra nguồn/module thực trước dùng.
 
 ## Hành vi dự kiến — chưa kiểm chứng trên kit
 - LED đỏ sáng, LED xanh tắt; các phím không mở khóa trong M2.
-- OLED hiện RFID DOOR LOCK, SETUP REQUIRED; mã RESULT phản ánh đọc EEPROM.
-- RC522 đọc UID; giữ thẻ sẽ tăng diag_card_reads nhiều lần (lọc lặp làm ở M3).
+- OLED hiện RFID DOOR LOCK, SETUP REQUIRED; dòng kết quả phản ánh đọc EEPROM.
+- RC522 đọc UID; giữ thẻ sẽ tăng diag_card_reads nhiều lần (bản diagnostic cố ý không dùng bộ lọc của ứng dụng M3).
 - Keypad một nhấn tạo một sự kiện, xem diag_last_key/diag_key_events.
 - EEPROM chỉ đọc 16 byte đầu mỗi giây, không tự ghi/xóa/provision.
 - Kiểm tra EEPROM write bằng host test đã chạy; test trên kit cần vùng scratch

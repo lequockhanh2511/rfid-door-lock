@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Repeatable driver tests against models; never accesses actual peripherals."""
 from pathlib import Path
-import os,subprocess,shutil
+import os,subprocess,shutil,sys
 root=Path(__file__).resolve().parents[1];os.chdir(root)
 cc=shutil.which('gcc')
 if not cc: raise SystemExit('GCC required')
@@ -19,4 +19,8 @@ for name, sources in {'config':['config_store','rfid_service'],'control':['confi
   '-Iapp/inc','-Ihal/inc','-Itests','tests/test_'+name+'.c','tests/fake_eeprom.c',
   *['app/src/'+s+'.c' for s in sources],'-o',target],check=True)
  subprocess.run([str(root/target)],check=True)
+subprocess.run([cc,'-std=c11','-Wall','-Wextra','-Werror','-pedantic','-fsanitize=undefined',
+ '-Itests/mocks','-Iapp/inc','tests/test_ipc.c','app/src/app_ipc.c','-o','build/host/test_ipc'],check=True)
+subprocess.run([str(root/'build/host/test_ipc')],check=True)
+subprocess.run([sys.executable,'tests/test_provision.py'],check=True)
 print('HOST MOCK TESTS PASS. Electrical/RF/RTOS-on-board tests remain pending.')

@@ -30,6 +30,14 @@ int main(void){
  puts("PASS OLED init, 1024-byte transfer, page/column layout, font A, clipping");
  app_ui_snapshot_t v={0};v.state=APP_STATE_ADMIN_AUTH;v.entered_digits=6;
  assert(oled_present(&v,200)==APP_OK);
+ v.selected_id=2;v.occupied_mask=0x3ff;v.pin_role=APP_PIN_ADMIN;
+ for(unsigned st=0;st<=APP_STATE_ERROR;st++){
+  v.state=(app_state_t)st;
+  for(unsigned result=0;result<=APP_NO_EVENT;result++){
+   v.result=(app_result_t)result;assert(oled_present(&v,200)==APP_OK);
+  }
+ }
+ puts("PASS OLED renders all 14 states and 11 result codes with bounded transfers");
  v.entered_digits=7;assert(oled_present(&v,200)==APP_INVALID_INPUT);
  fail=1;assert(ssd1306_flush(100)==APP_IO_ERROR);
  lock_output_init_closed();assert(!leds);lock_output_set(true);assert(leds);lock_output_set(false);assert(!leds);

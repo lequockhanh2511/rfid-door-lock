@@ -6,6 +6,12 @@
 int main(void){
     test_eeprom_reset();config_store_t s={0},loaded;app_config_t c=test_config();
     assert(config_store_load(&s)==APP_NOT_READY&&!s.ready);
+    for(int cut=0;cut<=161;cut++){
+        test_eeprom_reset();test_write_budget=cut;
+        (void)config_store_provision(&s,&c);test_write_budget=-1;
+        assert(config_store_load(&s)==(cut<161?APP_NOT_READY:APP_OK));
+    }
+    test_eeprom_reset();
     assert(config_store_provision(&s,&c)==APP_OK&&s.revision==1);
     assert(config_store_provision(&s,&c)==APP_DENIED);
     unsigned char baseline[32768];memcpy(baseline,test_eeprom,sizeof baseline);
@@ -27,6 +33,13 @@ int main(void){
         (void)config_store_save(&s,&c);test_write_budget=-1;
         assert(config_store_load(&loaded)==APP_OK);assert(loaded.config.slots[1].used==(cut==161));
     }
+    /* Every single-bit corruption in a 160-byte newest record falls back. */
+    unsigned char clean[CONFIG_RECORD_BYTES];memcpy(clean,test_eeprom,sizeof clean);
+    for(unsigned bit=0;bit<CONFIG_RECORD_BYTES*8u;bit++){
+        memcpy(test_eeprom,clean,sizeof clean);test_eeprom[bit/8]^=(unsigned char)(1u<<(bit%8));
+        assert(config_store_load(&s)==APP_OK&&!s.config.slots[1].used);
+    }
+    memcpy(test_eeprom,clean,sizeof clean);
     test_eeprom[12]^=1; /* corrupt newest A -> previous B survives */
     assert(config_store_load(&s)==APP_OK&&!s.config.slots[1].used);
     test_read_fail=1;assert(config_store_load(&s)==APP_IO_ERROR&&!s.ready);test_read_fail=0;
@@ -50,11 +63,16 @@ int main(void){
     /* modulo sequence wrap chooses 0 as newer than UINT32_MAX */
     s.revision=UINT32_MAX-1;assert(config_store_save(&s,&changed)==APP_OK);assert(s.revision==UINT32_MAX);
     assert(config_store_save(&s,&c)==APP_OK&&s.revision==0);assert(config_store_load(&s)==APP_OK&&s.revision==0&&s.config.slots[1].used);
+    /* Commit succeeded but final verification read failed: report uncertainty,
+       then recover the actually committed new record on reload. */
+    test_read_calls=0;test_read_fail_at=2;
+    assert(config_store_save(&s,&changed)==APP_IO_ERROR&&!s.ready);
+    test_read_fail_at=0;assert(config_store_load(&s)==APP_OK&&!s.config.slots[1].used);
     card_gate_t gate={0};assert(card_gate_update(&gate,APP_OK,true));
     for(int i=0;i<20;i++)assert(!card_gate_update(&gate,APP_OK,true));
     for(int i=0;i<20;i++)assert(!card_gate_update(&gate,APP_IO_ERROR,false));
     assert(!card_gate_update(&gate,APP_OK,true));
     for(int i=0;i<3;i++)assert(!card_gate_update(&gate,APP_NO_EVENT,false));
     assert(card_gate_update(&gate,APP_OK,true));
-    puts("PASS config/service: 324 byte-cut trials, corrupt bank, read/write faults, slot stability, full/duplicate, PIN, reboot, sequence wrap, held card");
+    puts("PASS config/service: 486 byte-cut trials, 1280 bit corruptions, uncertain commit readback, read/write faults, slot stability, full/duplicate, PIN, reboot, sequence wrap, held card");
 }

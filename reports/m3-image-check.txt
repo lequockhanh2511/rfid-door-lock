@@ -1,0 +1,3 @@
+rfid_application: BIN 21040 bytes; initial SP=0x20020000; reset vector=0x08002305; unresolved symbols=0; SHA256=36e2dee01d80a513e05b4787ba1d34f8eb2276bb340330c3f82a3e6514c7b480
+rfid_m2_diagnostics: BIN 15360 bytes; initial SP=0x20020000; reset vector=0x08002051; unresolved symbols=0; SHA256=71923dc7beb3829b5d40ad2f3e977e478bfc491212eec348d2cb12483437104d
+Static ARM image validation only; never executed on STM32 in this environment.
