@@ -64,19 +64,34 @@ app_result_t oled_present(const app_ui_snapshot_t *v,uint32_t t) {
     static const char *const states[]={"BOOT","SETUP REQUIRED","READY","ENTER PIN","UNLOCKED",
      "ADMIN PIN","ADMIN MENU","SCAN NEW CARD","DELETE SLOT","CONFIRM DELETE",
      "CARD LIST","CHANGE PIN","PLEASE WAIT","ERROR"};
-    if(!v||(unsigned)v->state>=sizeof states/sizeof states[0]||v->entered_digits>APP_PIN_DIGITS||
-       v->card_id>APP_CARD_CAPACITY||v->used_count>APP_CARD_CAPACITY)return APP_INVALID_INPUT;
+    static const char *const results[]={"OK","CARD ALREADY SAVED","FULL - DELETE A SLOT","CARD NOT FOUND",
+     "INVALID INPUT","EEPROM / BUS ERROR","QUEUE BUSY - RETRY","TIMEOUT","WRONG PIN",
+     "SETUP REQUIRED","NO EVENT"};
+    if(!v||(unsigned)v->state>=sizeof states/sizeof states[0]||(unsigned)v->result>=sizeof results/sizeof results[0]||
+       v->entered_digits>APP_PIN_DIGITS||v->card_id>APP_CARD_CAPACITY||v->used_count>APP_CARD_CAPACITY||
+       v->selected_id>99)return APP_INVALID_INPUT;
     ssd1306_clear();ssd1306_text(0,0,"RFID DOOR LOCK");ssd1306_text(1,0,states[v->state]);
     ssd1306_text(2,0,v->unlocked?"LOCK: OPEN":"LOCK: CLOSED");
-    char line[22];ssd1306_text(3,0,"CARD:00 TOTAL:00");
-    draw_number(3,5,v->card_id,2);draw_number(3,14,v->used_count,2);
+    ssd1306_text(3,0,"CARD:00 TOTAL:00");draw_number(3,5,v->card_id,2);draw_number(3,14,v->used_count,2);
+    ssd1306_text(4,0,results[v->result]);
     if(v->state==APP_STATE_PIN_ENTRY||v->state==APP_STATE_ADMIN_AUTH||v->state==APP_STATE_CHANGE_PIN){
-        memset(line,'*',v->entered_digits);line[v->entered_digits]=0;ssd1306_text(4,0,line);
-    } else {
-        ssd1306_text(4,0,"RESULT:");draw_number(4,7,(uint32_t)v->result,1);
-    }
-    if(v->state==APP_STATE_ADMIN_MENU){ssd1306_text(5,0,"1 ADD 2 DEL 3 LIST");ssd1306_text(6,0,"4 USER PIN 5 ADMIN");}
+        char line[APP_PIN_DIGITS+1];memset(line,'*',v->entered_digits);line[v->entered_digits]=0;
+        ssd1306_text(5,0,line);
+        if(v->state==APP_STATE_CHANGE_PIN){
+            ssd1306_text(6,0,v->confirm_pin?"REENTER SAME PIN":(v->pin_role==APP_PIN_ADMIN?"NEW ADMIN PIN":"NEW USER PIN"));
+        }
+    }else if(v->state==APP_STATE_ADMIN_MENU){ssd1306_text(5,0,"1 ADD 2 DEL 3 LIST");ssd1306_text(6,0,"4 USER PIN 5 ADMIN");}
+    else if(v->state==APP_STATE_LIST_CARDS){
+        if(v->selected_id<1||v->selected_id>10)return APP_INVALID_INPUT;
+        ssd1306_text(5,0,"SLOT 00:");draw_number(5,5,v->selected_id,2);
+        ssd1306_text(5,9,(v->occupied_mask&(1u<<(v->selected_id-1)))?"USED":"EMPTY");ssd1306_text(6,0,"4 PREV 6 NEXT");
+    }else if(v->state==APP_STATE_DELETE_INPUT||v->state==APP_STATE_DELETE_CONFIRM){
+        ssd1306_text(5,0,"SLOT:");draw_number(5,5,v->selected_id,2);
+        ssd1306_text(6,0,v->state==APP_STATE_DELETE_CONFIRM?"# DELETE  D CANCEL":"TYPE 01-10 THEN #");
+    }else if(v->state==APP_STATE_SETUP_REQUIRED){ssd1306_text(5,0,"PROVISION VIA STLINK");ssd1306_text(6,0,"D RETRY CONFIG READ");}
+    else if(v->state==APP_STATE_ERROR){ssd1306_text(5,0,"LOCKED FOR SAFETY");ssd1306_text(6,0,"D RELOAD CONFIG");}
     else if(v->unlocked){ssd1306_text(5,0,"LEFT MS:");draw_number(5,8,v->remaining_ms,1);}
+    else if(v->state==APP_STATE_IDLE)ssd1306_text(5,0,"SCAN / PIN / A ADMIN");
     ssd1306_text(7,0,"# OK  * BACK  D EXIT");
     return ssd1306_flush(t);
 }
