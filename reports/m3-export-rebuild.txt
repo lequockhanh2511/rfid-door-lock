@@ -1,0 +1,9 @@
+PASS exported source builds from a different directory with no SDK downloads.
+PASS rebuilt application BIN equals original byte-for-byte.
+SHA256=36e2dee01d80a513e05b4787ba1d34f8eb2276bb340330c3f82a3e6514c7b480
+Memory region         Used Size  Region Size  %age Used
+           FLASH:       21040 B       512 KB      4.01%
+             RAM:       29192 B       128 KB     22.27%
+   text	   data	    bss	    dec	    hex	filename
+  21016	     16	  29176	  50208	   c420	/workspace/scratch/b236814e5b43/tmp/m3-export-check/build/app/rfid_application.elf
+BUILD PASS: ARM target=app. Hardware execution: NOT TESTED.
