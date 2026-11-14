@@ -30,5 +30,8 @@ typedef struct {
     uint8_t entered_digits; /* Never put PIN text into UI messages. */
     uint16_t occupied_mask; /* bit 0 = slot 01, ... bit 9 = slot 10 */
     uint32_t remaining_ms;
+    uint8_t selected_id; /* list selection or typed deletion number */
+    bool confirm_pin;
+    app_pin_role_t pin_role;
 } app_ui_snapshot_t;
 #endif
