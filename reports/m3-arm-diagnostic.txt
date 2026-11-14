@@ -1,0 +1,6 @@
+Memory region         Used Size  Region Size  %age Used
+           FLASH:         15 KB       512 KB      2.93%
+             RAM:       29192 B       128 KB     22.27%
+   text	   data	    bss	    dec	    hex	filename
+  15332	     20	  29172	  44524	   adec	/workspace/scratch/b236814e5b43/work/rfid-door-lock/build/m2/rfid_m2_diagnostics.elf
+BUILD PASS: ARM target=m2. Hardware execution: NOT TESTED.

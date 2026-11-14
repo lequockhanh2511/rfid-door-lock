@@ -31,7 +31,7 @@ static void submit(access_control_t *c,app_command_t *cmd,uint32_t now) {
     app_result_t r=c->send(cmd,c->send_ctx);
     if(r!=APP_OK){c->view.result=r;app_secure_clear(cmd,sizeof *cmd);return;}
     c->pending=true;c->cancelled=false;c->pending_id=cmd->request_id;c->pending_kind=cmd->kind;
-    c->pending_role=cmd->data.credential.role;c->pending_at=now;
+    c->pending_role=cmd->kind==APP_CMD_VERIFY_PIN?cmd->data.credential.role:APP_PIN_USER;c->pending_at=now;
     enter(c,APP_STATE_WAIT_RESULT,now);c->view.result=APP_OK;
     app_secure_clear(cmd,sizeof *cmd);
 }
@@ -127,10 +127,11 @@ void access_control_event(access_control_t *c,const app_event_t *e,uint32_t now)
     access_control_tick(c,now);
     if(e->kind==APP_EVENT_STORAGE_FAULT){c->pending=false;error(c,e->result,now);return;}
     if(e->kind==APP_EVENT_CARD_PRESENT){
-        if(c->pending||(uint32_t)(now-e->occurred_ms)>CARD_MAX_AGE_MS)return;
+        if(c->pending||(uint32_t)(now-e->occurred_ms)>CARD_MAX_AGE_MS||
+           ((uint32_t)(e->occurred_ms-c->mode_at)==0u||
+            (uint32_t)(e->occurred_ms-c->mode_at)>=0x80000000u))return;
         app_command_t cmd={0};cmd.data.uid=e->uid;
         if(c->admin&&c->view.state==APP_STATE_ADD_WAIT_CARD){
-            if((uint32_t)(e->occurred_ms-c->mode_at)>=0x80000000u)return;
             cmd.kind=APP_CMD_ADD_CARD;c->last_admin=now;
         }else if(!c->admin&&(c->view.state==APP_STATE_IDLE||c->view.state==APP_STATE_PIN_ENTRY||c->view.state==APP_STATE_UNLOCKED))cmd.kind=APP_CMD_LOOKUP_CARD;
         else return;

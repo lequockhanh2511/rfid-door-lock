@@ -1,19 +1,19 @@
-# Git thực hiện theo giai đoạn
+# Git đã thực hiện
 
-M1: baseline trên main; tạo develop; nhánh feature/project-contracts thêm
-API/docs/check; kiểm tra rồi merge --no-ff về develop.
+M1: main baseline → develop → feature/project-contracts → merge --no-ff.
+M2: feature/platform-m2, feature/hal-rfid-storage, feature/hal-keypad,
+feature/hal-display-lock, feature/m2-diagnostics; mỗi nhánh có commit thật và merge.
+M3: feature/task-rfid, feature/task-keypad-admin, feature/task-display-lock;
+logic tương ứng được host test trước merge vào develop.
+M4 sơ bộ: integration/system-v1 từ develop, ghép main/IPC, công cụ provision,
+kiểm thử bổ sung, build ARM, cập nhật tài liệu; merge sau kiểm tra trên máy.
 
-M2: feature/hal-rfid-storage, feature/hal-keypad, feature/hal-display-lock.
-M3: feature/task-rfid, feature/task-keypad-admin, feature/task-display-lock.
-M4: integration/system-v1 từ develop.
-Chưa tạo các nhánh M2–M4 rỗng để tránh nhầm đã có công việc.
+Đọc lịch sử thực bằng `git log --all --graph --oneline` sau clone bundle.
+Commit dùng danh tính Codex của môi trường, không giả tên ba thành viên.
+Không có remote GitHub, không có PR hay review độc lập. Merge cục bộ và test
+là bằng chứng đã làm, không được đổi tên thành PR review đã hoàn tất.
 
-Nếu không có kit, driver/task chỉ ghi kiểm tra host đạt, nghiệm thu kit còn chờ.
-Chỉ sau kit đạt mới merge develop về main và tag v1.0.0.
-Không có remote/PR ở M1. Sau này cần PR thật thì kết nối repo và review thật.
-Không sửa main bằng tính năng sau baseline. Không sửa tác giả commit thành sinh viên.
-
-## Đã thực hiện M2
-feature/platform-m2 -> develop (nguồn SDK/BSP); từng nhánh driver -> develop
-sau host test; feature/m2-diagnostics -> develop sau ARM build. Chỉ merge cục bộ,
-không giả PR/review GitHub. Chưa tạo integration/system-v1 vì chưa có app M3.
+Chưa có kit nên trạng thái nghiệm thu **PENDING_HARDWARE**. Main giữ baseline;
+chưa merge develop về main, chưa tag v1.0.0. Khi có kit và checklist đạt, ba
+thành viên review phần của mình rồi mới làm release và báo cáo kết quả vật lý.
+Tài liệu nguồn quy trình: QuyTrinh-Git-2.pdf giữ trong docs/.

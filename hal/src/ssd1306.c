@@ -86,7 +86,9 @@ app_result_t oled_present(const app_ui_snapshot_t *v,uint32_t t) {
         ssd1306_text(5,0,"SLOT 00:");draw_number(5,5,v->selected_id,2);
         ssd1306_text(5,9,(v->occupied_mask&(1u<<(v->selected_id-1)))?"USED":"EMPTY");ssd1306_text(6,0,"4 PREV 6 NEXT");
     }else if(v->state==APP_STATE_DELETE_INPUT||v->state==APP_STATE_DELETE_CONFIRM){
-        ssd1306_text(5,0,"SLOT:");draw_number(5,5,v->selected_id,2);
+        ssd1306_text(5,0,"SLOT:--");
+        if(v->state==APP_STATE_DELETE_CONFIRM||v->entered_digits>=2)draw_number(5,5,v->selected_id,2);
+        else if(v->entered_digits==1)draw_number(5,5,v->selected_id,1);
         ssd1306_text(6,0,v->state==APP_STATE_DELETE_CONFIRM?"# DELETE  D CANCEL":"TYPE 01-10 THEN #");
     }else if(v->state==APP_STATE_SETUP_REQUIRED){ssd1306_text(5,0,"PROVISION VIA STLINK");ssd1306_text(6,0,"D RETRY CONFIG READ");}
     else if(v->state==APP_STATE_ERROR){ssd1306_text(5,0,"LOCKED FOR SAFETY");ssd1306_text(6,0,"D RELOAD CONFIG");}

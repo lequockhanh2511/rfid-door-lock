@@ -15,3 +15,15 @@ Tài liệu này ưu tiên hơn SPEC.md khi mô tả nơi thực hiện và bàn
 - Loại phụ thuộc snprintf khỏi OLED và dùng startup ST không hosted crt0;
   build cuối không còn cảnh báo. HAL flash_ex nguồn vẫn được giữ nhưng không
   biên dịch vì diagnostic không dùng flash erase/program.
+
+## M3 và tích hợp sơ bộ
+- card_store được triển khai bằng rfid_service.c + config_store.c, không tạo lớp rỗng chỉ để đủ tên.
+- Thêm occurred_ms trong event và selected_id/confirm_pin/pin_role trong snapshot;
+  đã cập nhật cả ba phần và test header/ARM, không có API riêng bị bỏ quên.
+- Request timeout3s; tối đa một pending. D hủy quyền/ngữ cảnh, không hoàn tác mutation đã gửi.
+- Reply đầy queue được giữ và retry; card event đầy bị bỏ có counter, cần rời thẻ quẹt lại.
+- Chỉ ba poll NO_EVENT liên tiếp mới re-arm; lỗi reader không coi là đã rời thẻ.
+- Cấu hình A/B tại0x0000/0x0100, bản160 byte, CRC32 và marker. PIN là dữ liệu demo rõ.
+- Chưa có UID thật: chỉ giao generator và source provision, không giao image setup bằng UID mẫu.
+- Tích hợp main/IPC/build trong integration/system-v1. Host pass không thay nghiệm thu kit.
+- Script build mặc định đổi từ diagnostic ở M2 sang app; diagnostic dùng --target m2.

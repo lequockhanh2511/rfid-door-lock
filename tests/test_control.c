@@ -13,7 +13,7 @@ static void reply(void){assert(waiting);app_event_t e;rfid_service_command(&stor
 static void key(char k){now+=10;access_control_key(&c,k,now);}
 static void keys(const char *s){while(*s)key(*s++);}
 static void advance(uint32_t ms){now+=ms;access_control_tick(&c,now);}
-static void card(app_uid_t uid){app_event_t e={0};e.kind=APP_EVENT_CARD_PRESENT;e.uid=uid;e.occurred_ms=now;access_control_event(&c,&e,now);}
+static void card(app_uid_t uid){now++;app_event_t e={0};e.kind=APP_EVENT_CARD_PRESENT;e.uid=uid;e.occurred_ms=now;access_control_event(&c,&e,now);}
 static void admin(void){keys("A654321#");assert(waiting);reply();assert(c.admin&&c.view.state==APP_STATE_ADMIN_MENU&&!c.view.unlocked);}
 static void start(uint32_t time){now=time;waiting=false;queue_full=false;access_control_init(&c,now,send_command,NULL);reply();}
 int main(void){
@@ -41,9 +41,14 @@ int main(void){
     key('D');keys("123456#");reply();assert(!c.view.unlocked);keys("111111#");reply();assert(c.view.unlocked);
     advance(5000);start(now);card(stranger);reply();assert(c.view.unlocked&&c.view.card_id==2);advance(5000);
     admin();advance(APP_ADMIN_TIMEOUT_MS);assert(!c.admin&&c.view.state==APP_STATE_IDLE);
+    /* A card sampled inside Admin just before its expiry cannot open after exit. */
+    admin();uint32_t expiry=c.last_admin+APP_ADMIN_TIMEOUT_MS;
+    app_event_t expired={0};expired.kind=APP_EVENT_CARD_PRESENT;expired.uid=cfg.slots[0].uid;expired.occurred_ms=expiry-1;
+    now=expiry;access_control_event(&c,&expired,now);assert(!waiting&&!c.admin&&!c.view.unlocked);
     /* Old card queued before ADD mode must not be enrolled. */
     admin();uint32_t old=now;key('1');app_event_t event={0};event.kind=APP_EVENT_CARD_PRESENT;event.uid=stranger;event.occurred_ms=old;
-    access_control_event(&c,&event,now);assert(!waiting);key('D');key('D');
+    access_control_event(&c,&event,now);assert(!waiting);
+    event.occurred_ms=c.mode_at;access_control_event(&c,&event,now);assert(!waiting);key('D');key('D');
     event.occurred_ms=now-501;access_control_event(&c,&event,now);assert(!waiting);
     /* PIN entry interrupted by a valid card; secrets are wiped. */
     keys("11");card(stranger);assert(c.length==0);reply();assert(c.view.unlocked);advance(5000);

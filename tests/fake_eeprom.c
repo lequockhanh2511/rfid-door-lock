@@ -1,10 +1,10 @@
 #include "fake_eeprom.h"
 #include "eeprom24.h"
 #include <string.h>
-unsigned char test_eeprom[32768];int test_write_budget=-1,test_read_fail;
-void test_eeprom_reset(void){memset(test_eeprom,255,sizeof test_eeprom);test_write_budget=-1;test_read_fail=0;}
+unsigned char test_eeprom[32768];int test_write_budget=-1,test_read_fail,test_read_fail_at,test_read_calls;
+void test_eeprom_reset(void){memset(test_eeprom,255,sizeof test_eeprom);test_write_budget=-1;test_read_fail=0;test_read_fail_at=0;test_read_calls=0;}
 app_result_t eeprom24_read(uint16_t at,uint8_t *p,size_t n,uint32_t t){
-    (void)t;if(test_read_fail||(size_t)at+n>sizeof test_eeprom)return APP_IO_ERROR;
+    (void)t;test_read_calls++;if(test_read_fail||(test_read_fail_at&&test_read_calls==test_read_fail_at)||(size_t)at+n>sizeof test_eeprom)return APP_IO_ERROR;
     memcpy(p,test_eeprom+at,n);return APP_OK;
 }
 app_result_t eeprom24_write(uint16_t at,const uint8_t *p,size_t n,uint32_t t){
