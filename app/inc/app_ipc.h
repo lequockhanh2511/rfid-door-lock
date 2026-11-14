@@ -27,8 +27,9 @@ typedef struct {
     uint8_t used_count;
     uint16_t occupied_mask;
     uint32_t config_revision;
+    uint32_t occurred_ms; /* CARD_PRESENT sample time; reject stale events. */
 } app_event_t;
-/* Implemented later in app_ipc.c with FreeRTOS queues; no RTOS types leak here.
+/* Implemented in app_ipc.c with FreeRTOS queues; no RTOS types leak here.
  * Copy messages by value. All pointer arguments must be non-NULL.
  * Task context only. timeout_ms=0 is nonblocking; no infinite timeout allowed.
  * init before any task. create failures return APP_NOT_READY and clean up.
