@@ -22,14 +22,7 @@ static void run(void *arg){
 #if PROVISION_TEST_ONLY
         ssd1306_text(2,0,"TEST ONLY");ssd1306_text(3,0,"WRITES DISABLED");
 #else
-        if(provision_status==APP_OK){
-            ssd1306_text(2,0,"SETUP SAVED");
-#if PROVISION_KEYPAD_ENROLLMENT
-            ssd1306_text(3,0,"8 VIRTUAL SLOTS");ssd1306_text(6,0,"THEN ADMIN ADD CARDS");
-#else
-            ssd1306_text(3,0,"10 SLOTS SAVED");
-#endif
-        }
+        if(provision_status==APP_OK){ssd1306_text(2,0,"SETUP SAVED");ssd1306_text(3,0,"8 VIRTUAL CARDS");}
         else if(provision_status==APP_DENIED)ssd1306_text(2,0,"CONFIG ALREADY EXISTS");
         else {ssd1306_text(2,0,"SETUP FAILED");ssd1306_text(3,0,"CHECK DEBUG STATUS");}
 #endif

@@ -1,4 +1,4 @@
-/* Le Quoc Khanh: display failures cannot block GPIO lock deadlines. */
+/* Le Quoc Khanh: display failures cannot block servo lock deadlines. */
 #include "app_tasks.h"
 #include "app_ipc.h"
 #include "device_api.h"

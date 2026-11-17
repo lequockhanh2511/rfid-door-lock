@@ -1,15 +1,5 @@
 [
   {
-    "name": "hal",
-    "url": "https://github.com/STMicroelectronics/stm32f4xx-hal-driver",
-    "commit": "6ef30cf0ef6cc29ad518f37b9e6de89b6b815f90"
-  },
-  {
-    "name": "device",
-    "url": "https://github.com/STMicroelectronics/cmsis-device-f4",
-    "commit": "9192c7b9df75a142f2027ab266601fe061fc00b3"
-  },
-  {
     "name": "cmsis",
     "url": "https://github.com/ARM-software/CMSIS_5",
     "commit": "2b7495b8535bdcb306dac29b9ded4cfb679d7e5c"
@@ -18,5 +8,15 @@
     "name": "freertos",
     "url": "https://github.com/FreeRTOS/FreeRTOS-Kernel",
     "commit": "dbf70559b27d39c1fdb68dfb9a32140b6a6777a0"
+  },
+  {
+    "name": "hal",
+    "url": "https://github.com/STMicroelectronics/stm32f1xx_hal_driver",
+    "commit": "baeff0a8dcb23c72012170a0978254a238f1f980"
+  },
+  {
+    "name": "device",
+    "url": "https://github.com/STMicroelectronics/cmsis_device_f1",
+    "commit": "c8e9a4a4f16b6d2cb2a2083cbe5161025280fb22"
   }
 ]

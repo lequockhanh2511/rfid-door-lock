@@ -6,7 +6,14 @@
 #define APP_PIN_DIGITS 6u
 #define APP_UNLOCK_MS 5000u
 #define APP_INPUT_TIMEOUT_MS 20000u
-#define APP_ADMIN_TIMEOUT_MS 60000u
+#define APP_ADMIN_TIMEOUT_MS 30000u
+#define APP_ADMIN_FAIL_LIMIT 3u
+#define APP_ADMIN_LOCKOUT_MS 30000u
+#define APP_SERVO_CLOSED_US 1000u
+#define APP_SERVO_OPEN_US 1500u
+#if APP_SERVO_CLOSED_US < 500u || APP_SERVO_CLOSED_US > 2500u || APP_SERVO_OPEN_US < 500u || APP_SERVO_OPEN_US > 2500u || APP_SERVO_OPEN_US == APP_SERVO_CLOSED_US
+#error Invalid servo pulse configuration
+#endif
 #define APP_KEYPAD_SCAN_MS 10u
 #define APP_KEYPAD_DEBOUNCE_MS 30u
 #define APP_RFID_POLL_MS 50u
@@ -21,7 +28,7 @@
 #define APP_CONTROL_STACK_WORDS 512u
 #define APP_RFID_STACK_WORDS 768u
 #define APP_UI_STACK_WORDS 512u
-/* Provisioning only. Never restore these on an ordinary failed EEPROM read. */
+/* Provisioning only. Never restore these on an ordinary failed Flash read. */
 #define APP_DEMO_USER_PIN "123456"
 #define APP_DEMO_ADMIN_PIN "654321"
 #endif

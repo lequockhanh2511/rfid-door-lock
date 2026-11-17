@@ -1,6 +1,7 @@
 /* Nguyen Huu Anh: persistent configuration, single writer = task_rfid. */
 #include "config_store.h"
-#include "eeprom24.h"
+#include "internal_flash.h"
+#include "initial_config.h"
 #include <string.h>
 #define COMMIT 0xa5u
 #define CRC_OFFSET 155u
@@ -23,7 +24,7 @@ static uint32_t crc32(const uint8_t *p,size_t n) {
     return ~c;
 }
 static bool valid(const app_config_t *c) {
-    if(!c||!app_pin_valid(&c->user_pin)||!app_pin_valid(&c->admin_pin))return false;
+    if(!c||!app_pin_valid(&c->user_pin)||!app_pin_valid(&c->admin_pin)||!memcmp(c->user_pin.digits,c->admin_pin.digits,APP_PIN_DIGITS))return false;
     for(unsigned i=0;i<APP_CARD_CAPACITY;i++)if(c->slots[i].used){
         if(!app_uid_valid(&c->slots[i].uid))return false;
         for(unsigned j=0;j<i;j++)if(c->slots[j].used&&app_uid_equal(&c->slots[i].uid,&c->slots[j].uid))return false;
@@ -57,27 +58,41 @@ app_result_t config_store_load(config_store_t *s) {
     if(!s)return APP_INVALID_INPUT;
     app_secure_clear(s,sizeof *s);uint8_t r[CONFIG_RECORD_BYTES];
     app_config_t configs[2];uint32_t seq[2]={0};bool good[2]={false};app_result_t result=APP_NOT_READY;
+    bool blank=true;
     for(unsigned b=0;b<2;b++){
-        if(eeprom24_read((uint16_t)(b*CONFIG_BANK_STRIDE),r,sizeof r,300)!=APP_OK){result=APP_IO_ERROR;goto done;}
+        if(flash_bank_read((uint8_t)b,0,r,sizeof r)!=APP_OK){result=APP_IO_ERROR;goto done;}
         good[b]=decode(r,&configs[b],&seq[b]);
+        for(size_t i=0;i<sizeof r;i++)if(r[i]!=0xffu)blank=false;
     }
     if(good[0]||good[1]){
         uint8_t b=0;
         if(!good[0]||(good[1]&&(uint32_t)(seq[1]-seq[0])!=0u&&(uint32_t)(seq[1]-seq[0])<0x80000000u))b=1;
         s->config=configs[b];s->revision=seq[b];s->bank=b;s->ready=true;result=APP_OK;
+    }else{
+        /* A blank record prefix alone does not prove that the whole page is erased. */
+        for(uint8_t bank=0;bank<2u&&blank;bank++){
+            for(size_t off=CONFIG_RECORD_BYTES;off<CONFIG_BANK_STRIDE;off+=sizeof r){
+                size_t count=CONFIG_BANK_STRIDE-off;
+                if(count>sizeof r)count=sizeof r;
+                if(flash_bank_read(bank,off,r,count)!=APP_OK){result=APP_IO_ERROR;goto done;}
+                for(size_t i=0;i<count;i++)if(r[i]!=0xffu)blank=false;
+            }
+        }
+        result=blank?APP_NOT_READY:APP_STORAGE_CORRUPT;
     }
 done:
     app_secure_clear(r,sizeof r);app_secure_clear(configs,sizeof configs);return result;
 }
 static app_result_t commit(config_store_t *s,const app_config_t *c,uint8_t bank,uint32_t seq) {
-    uint8_t r[CONFIG_RECORD_BYTES],check[CONFIG_RECORD_BYTES],marker=0;uint16_t base=(uint16_t)(bank*CONFIG_BANK_STRIDE);
+    uint8_t r[CONFIG_RECORD_BYTES],check[CONFIG_RECORD_BYTES];
     encode(r,c,seq);app_result_t result=APP_IO_ERROR;
-    /* Invalidate before touching payload; the other bank remains committed. */
-    if(eeprom24_write(base+MARKER_OFFSET,&marker,1,200)!=APP_OK)goto done;
-    if(eeprom24_write(base,r,MARKER_OFFSET,700)!=APP_OK)goto done;
-    if(eeprom24_read(base,check,MARKER_OFFSET,300)!=APP_OK||memcmp(r,check,MARKER_OFFSET))goto done;
-    marker=COMMIT;if(eeprom24_write(base+MARKER_OFFSET,&marker,1,200)!=APP_OK)goto done;
-    if(eeprom24_read(base,check,sizeof check,300)!=APP_OK||memcmp(r,check,sizeof r))goto done;
+    /* Erase only inactive page. Program first 158 bytes; final halfword contains
+       last CRC byte and commit marker. Never rewrite a programmed halfword. */
+    if(flash_bank_erase(bank)!=APP_OK)goto done;
+    if(flash_bank_program(bank,0,r,158)!=APP_OK)goto done;
+    if(flash_bank_read(bank,0,check,158)!=APP_OK||memcmp(r,check,158))goto done;
+    if(flash_bank_program(bank,158,r+158,2)!=APP_OK)goto done;
+    if(flash_bank_read(bank,0,check,sizeof check)!=APP_OK||memcmp(r,check,sizeof r))goto done;
     s->config=*c;s->bank=bank;s->revision=seq;s->ready=true;result=APP_OK;
 done:
     if(result!=APP_OK)s->ready=false; /* Outcome may be uncertain: force reload. */
@@ -94,4 +109,10 @@ app_result_t config_store_provision(config_store_t *s,const app_config_t *c) {
     if(r==APP_OK)return APP_DENIED;
     if(r!=APP_NOT_READY)return r;
     return commit(s,c,0,1);
+}
+
+app_result_t config_store_initialize(config_store_t *s) {
+    app_result_t result=config_store_load(s);
+    if(result!=APP_NOT_READY)return result;
+    return commit(s,&app_initial_config,0,1);
 }

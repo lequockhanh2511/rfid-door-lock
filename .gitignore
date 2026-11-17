@@ -10,3 +10,8 @@ Release/
 __pycache__/
 .metadata/
 *.launch
+tmp/
+toolchains/
+reports/
+dist/
+docs/BAO_CAO_DOI_CHIEU.md

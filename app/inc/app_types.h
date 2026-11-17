@@ -6,7 +6,7 @@
 typedef enum {
     APP_OK = 0, APP_DUPLICATE, APP_FULL, APP_NOT_FOUND,
     APP_INVALID_INPUT, APP_IO_ERROR, APP_BUSY, APP_TIMEOUT,
-    APP_DENIED, APP_NOT_READY, APP_NO_EVENT
+    APP_DENIED, APP_NOT_READY, APP_NO_EVENT, APP_STORAGE_CORRUPT
 } app_result_t;
 typedef struct { uint8_t length; uint8_t bytes[APP_UID_MAX_BYTES]; } app_uid_t;
 typedef struct { bool used; app_uid_t uid; } app_card_slot_t;
@@ -17,8 +17,8 @@ typedef enum {
     APP_STATE_PIN_ENTRY, APP_STATE_UNLOCKED, APP_STATE_ADMIN_AUTH,
     APP_STATE_ADMIN_MENU, APP_STATE_ADD_WAIT_CARD,
     APP_STATE_DELETE_INPUT, APP_STATE_DELETE_CONFIRM,
-    APP_STATE_LIST_CARDS, APP_STATE_CHANGE_PIN,
-    APP_STATE_WAIT_RESULT, APP_STATE_ERROR
+    APP_STATE_CHANGE_PIN,
+    APP_STATE_WAIT_RESULT, APP_STATE_ERROR, APP_STATE_PIN_ROLE
 } app_state_t;
 /* IDs 1..10; zero means 'no slot'. UID equality includes length. */
 typedef struct {
@@ -30,8 +30,10 @@ typedef struct {
     uint8_t entered_digits; /* Never put PIN text into UI messages. */
     uint16_t occupied_mask; /* bit 0 = slot 01, ... bit 9 = slot 10 */
     uint32_t remaining_ms;
-    uint8_t selected_id; /* list selection or typed deletion number */
+    uint8_t selected_id; /* typed deletion number */
     bool confirm_pin;
+    uint8_t pin_stage; /* 0 current, 1 new, 2 confirm */
+    uint32_t admin_lockout_ms;
     app_pin_role_t pin_role;
 } app_ui_snapshot_t;
 #endif

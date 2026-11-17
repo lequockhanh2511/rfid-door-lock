@@ -35,13 +35,14 @@ void port_delay_us(uint32_t us) {
 }
 void port_rc522_reset(bool high) { HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,high?GPIO_PIN_SET:GPIO_PIN_RESET); }
 void port_keypad_row(uint8_t row,bool active) {
-    if(row<4) HAL_GPIO_WritePin(GPIOC,(uint16_t)(1u<<(row+4u)),active?GPIO_PIN_RESET:GPIO_PIN_SET);
+    if(row<4) HAL_GPIO_WritePin(GPIOB,(uint16_t)(1u<<(row+12u)),active?GPIO_PIN_RESET:GPIO_PIN_SET);
 }
-uint8_t port_keypad_columns(void) { return (uint8_t)((~GPIOC->IDR>>8)&0x0fu); }
-void port_set_lock_leds(bool unlocked) {
-    /* Atomic on GPIOB: only one of the two LEDs is on. */
-    GPIOB->BSRR=unlocked ? (GPIO_PIN_10 | ((uint32_t)GPIO_PIN_1<<16))
-                        : (GPIO_PIN_1 | ((uint32_t)GPIO_PIN_10<<16));
+uint8_t port_keypad_columns(void) {
+    uint32_t v=~GPIOB->IDR;
+    return (uint8_t)(((v>>5)&1u)|(((v>>8)&7u)<<1));
+}
+void port_set_lock_servo(bool unlocked) {
+    __HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,unlocked?APP_SERVO_OPEN_US:APP_SERVO_CLOSED_US);
 }
 app_result_t port_spi_transfer(const uint8_t *tx,uint8_t *rx,size_t n,uint32_t t) {
     if(!tx||!rx||!n||n>UINT16_MAX||!driver_timeout_valid(t)) return APP_INVALID_INPUT;
