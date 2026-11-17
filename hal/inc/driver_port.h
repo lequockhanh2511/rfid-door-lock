@@ -4,7 +4,7 @@
 void port_rc522_reset(bool high);
 void port_keypad_row(uint8_t row, bool active);
 uint8_t port_keypad_columns(void); /* bit set = low/pressed */
-void port_set_lock_leds(bool unlocked);
+void port_set_lock_servo(bool unlocked);
 void port_delay_ms(uint32_t ms);
 void port_delay_us(uint32_t us);
 app_result_t port_i2c_probe(uint8_t address, uint32_t timeout_ms);

@@ -13,7 +13,7 @@ static void stats(const config_store_t *s,app_event_t *e) {
 }
 void rfid_service_command(config_store_t *s,const app_command_t *c,app_event_t *e) {
     memset(e,0,sizeof *e);e->kind=APP_EVENT_COMMAND_RESULT;e->request_id=c->request_id;e->command=c->kind;
-    if(c->kind==APP_CMD_GET_STATUS){e->result=config_store_load(s);stats(s,e);return;}
+    if(c->kind==APP_CMD_GET_STATUS){e->result=config_store_initialize(s);stats(s,e);return;}
     if(!s->ready){e->result=APP_NOT_READY;return;}
     e->result=APP_INVALID_INPUT;app_config_t next=s->config;bool save=false;
     switch(c->kind){
@@ -37,7 +37,14 @@ void rfid_service_command(config_store_t *s,const app_command_t *c,app_event_t *
     case APP_CMD_VERIFY_PIN: case APP_CMD_SET_PIN: {
         if((unsigned)c->data.credential.role>APP_PIN_ADMIN||!app_pin_valid(&c->data.credential.pin))break;
         app_pin_t *p=c->data.credential.role==APP_PIN_USER?&next.user_pin:&next.admin_pin;
-        if(c->kind==APP_CMD_SET_PIN){*p=c->data.credential.pin;save=true;}
+        if(c->kind==APP_CMD_SET_PIN){
+            const app_pin_t *other=c->data.credential.role==APP_PIN_USER?&next.admin_pin:&next.user_pin;
+            if(!app_pin_valid(&c->data.credential.current_pin))break;
+            unsigned diff=0;for(unsigned i=0;i<APP_PIN_DIGITS;i++)diff|=(unsigned char)p->digits[i]^(unsigned char)c->data.credential.current_pin.digits[i];
+            if(diff){e->result=APP_DENIED;break;}
+            if(!memcmp(other->digits,c->data.credential.pin.digits,APP_PIN_DIGITS))break;
+            *p=c->data.credential.pin;save=true;
+        }
         else {unsigned diff=0;for(unsigned i=0;i<APP_PIN_DIGITS;i++)diff|=(unsigned char)p->digits[i]^(unsigned char)c->data.credential.pin.digits[i];e->result=diff?APP_DENIED:APP_OK;}
         break;
     }

@@ -1,46 +1,29 @@
 #!/usr/bin/env python3
-"""Generate deliberate initial setup data. Does not access hardware."""
-import argparse,re
+"""Generate the single supported eight-virtual-card setup configuration."""
+import argparse
 from pathlib import Path
 
-def uid(text):
-    text=text.replace(':','').replace('-','').replace(' ','')
-    if len(text) not in (8,14,20) or not re.fullmatch('[0-9A-Fa-f]+',text):
-        raise argparse.ArgumentTypeError('UID must have 4, 7 or 10 bytes of hex')
-    return bytes.fromhex(text)
-
 def main():
-    parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output',type=Path,default=Path(__file__).resolve().parents[1]/'build/generated/provision_data.h')
-    parser.add_argument('--uid1',type=uid,help='UID read from physical card 1')
-    parser.add_argument('--uid2',type=uid,help='UID read from physical card 2')
-    parser.add_argument('--keypad-enrollment',action='store_true',help='Leave slots 01/02 empty and register physical cards through Admin')
-    mode=parser.add_mutually_exclusive_group(required=True)
-    mode.add_argument('--confirm-initial-setup',action='store_true',help='Authorize generating a one-time EEPROM setup image')
-    mode.add_argument('--test-only',action='store_true',help='Generate a compile-check image that cannot write EEPROM')
-    a=parser.parse_args()
-    if a.keypad_enrollment:
-        if a.uid1 is not None or a.uid2 is not None:parser.error('Do not supply UIDs in keypad enrollment mode')
-        cards=[None,None]
-    else:
-        if a.uid1 is None or a.uid2 is None:parser.error('Provide both --uid1 and --uid2, or use --keypad-enrollment')
-        cards=[a.uid1,a.uid2]
-    cards += [bytes((0xfa,0xce,0,i)) for i in range(1,9)]
-    used=[card for card in cards if card is not None]
-    if len(set(used))!=len(used):parser.error('Duplicate UID or collision with virtual cards FA:CE:00:01..08')
-    lines=['/* Slots 03..10 are virtual. Slots 01/02 may be empty for keypad enrollment. */',
-           '#ifndef PROVISION_DATA_H','#define PROVISION_DATA_H','#include "config_store.h"',
-           '#define PROVISION_TEST_ONLY '+str(int(a.test_only)),
-           '#define PROVISION_KEYPAD_ENROLLMENT '+str(int(a.keypad_enrollment)),
-           '#define PROVISION_OCCUPIED_SLOTS '+str(len(used))+'u',
-           'static const app_config_t provision_config = { .slots = {']
-    for card in cards:
-        if card is None:
-            lines.append('    {.used=false,.uid={.length=0,.bytes={0}}},')
-            continue
-        lines.append('    {.used=true,.uid={.length='+str(len(card))+',.bytes={'+','.join(f'0x{x:02x}' for x in card)+'}}},')
-    lines+=['}, .user_pin={.digits=APP_DEMO_USER_PIN}, .admin_pin={.digits=APP_DEMO_ADMIN_PIN} };','#endif','']
-    out=a.output
-    out.parent.mkdir(parents=True,exist_ok=True);out.write_text('\n'.join(lines))
-    print('Generated',out,'TEST_ONLY - EEPROM writes disabled' if a.test_only else 'INITIAL SETUP - blank/invalid configuration only')
-if __name__=='__main__':main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path, default=Path(__file__).resolve().parents[1] / 'build/generated/provision_data.h')
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--confirm-initial-setup', action='store_true')
+    mode.add_argument('--test-only', action='store_true')
+    args = parser.parse_args()
+    lines = [
+        '/* Slots 01/02 empty; eight synthetic UIDs in slots 03..10. */',
+        '#ifndef PROVISION_DATA_H',
+        '#define PROVISION_DATA_H',
+        '#include "initial_config.h"',
+        '#define PROVISION_TEST_ONLY ' + str(int(args.test_only)),
+        '#define PROVISION_OCCUPIED_SLOTS 8u',
+        '#define provision_config app_initial_config',
+        '#endif',
+        '',
+    ]
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text('\n'.join(lines), encoding='utf-8')
+    print('Generated eight-virtual-card setup; TEST_ONLY:', args.test_only)
+
+if __name__ == '__main__':
+    main()

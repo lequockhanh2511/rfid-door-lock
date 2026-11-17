@@ -11,7 +11,7 @@ typedef struct {
     union {
         app_uid_t uid;
         uint8_t card_id;
-        struct { app_pin_role_t role; app_pin_t pin; } credential;
+        struct { app_pin_role_t role; app_pin_t pin; app_pin_t current_pin; } credential;
     } data;
 } app_command_t;
 typedef enum {

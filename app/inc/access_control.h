@@ -6,9 +6,13 @@ typedef app_result_t (*control_send_fn)(const app_command_t *cmd,void *ctx);
 typedef struct {
     app_ui_snapshot_t view;
     bool admin,pending,cancelled,confirm_pin;
+    bool input_overflow;
     uint8_t length;
     char input[APP_PIN_DIGITS+1u];
-    app_pin_t new_pin;
+    app_pin_t current_pin,new_pin;
+    uint8_t admin_failures,pin_stage;
+    bool admin_locked;
+    uint32_t admin_locked_at;
     app_pin_role_t pin_role,pending_role;
     app_command_kind_t pending_kind;
     uint32_t next_id,pending_id,pending_at,last_input,last_admin,mode_at,unlock_at;

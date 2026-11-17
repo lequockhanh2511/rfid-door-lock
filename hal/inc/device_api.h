@@ -12,7 +12,7 @@ app_result_t rc522_poll(app_uid_t *uid, bool *present, uint32_t timeout_ms);
 app_result_t keypad_read_matrix(uint16_t *pressed_mask);
 /* Le Quoc Khanh: hardware output separated from OLED I2C delays.
  * lock_output_init_closed runs at boot before scheduler.
- * set is a bounded GPIO-only operation, sole caller = control task.
+ * set is a bounded PWM compare update, sole caller = control task.
  */
 void lock_output_init_closed(void);
 void lock_output_set(bool unlocked);

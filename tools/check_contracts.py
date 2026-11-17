@@ -2,13 +2,16 @@
 """Compile public contracts independently and together; no hardware execution."""
 from pathlib import Path
 import shutil
+import os
 import subprocess
 import tempfile
+from compiler_environment import prepare_compiler
 
 root = Path(__file__).resolve().parents[1]
-cc = shutil.which('gcc')
+cc = os.environ.get('CC') or shutil.which('gcc')
 if not cc:
     raise SystemExit('GCC missing: no compile validation performed.')
+cc = prepare_compiler(cc)
 headers = sorted((root / 'app/inc').glob('*.h')) + sorted((root / 'hal/inc').glob('*.h'))
 flags = ['-std=c11', '-Wall', '-Wextra', '-Werror', '-pedantic',
          '-I', str(root / 'app/inc'), '-I', str(root / 'hal/inc'), '-fsyntax-only']
